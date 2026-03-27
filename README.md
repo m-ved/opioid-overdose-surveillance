@@ -1,61 +1,66 @@
-# Real-Time Opioid Overdose Surveillance & Prediction System
+# Real-Time Opioid Overdose Surveillance Dashboard
 
-> Predicting overdose hotspots **24-72 hours before they emerge** using multi-source data fusion, geospatial-temporal analytics, and gradient boosting — achieving **0.83 AUC-ROC** at the zip-code level.
+> National opioid overdose surveillance powered by **real CDC & Census data** — tracking **68,000+ annual deaths**, **53 states/territories**, and **33,774 zip codes** with interactive visualizations.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
+![Data](https://img.shields.io/badge/Data-Real%20CDC%2FCensus-red)
 
 ## The Problem
 
-Over **100,000 Americans** die from drug overdoses annually, with opioids accounting for 75%. Public health departments fight this crisis with data that arrives weeks late. This project makes surveillance **predictive** — forecasting hotspots in the next 72 hours.
-
-## Key Results
-- **0.83 AUC-ROC** for 24-hour zip-code-level prediction, **0.78** for 72-hour
-- **35+ engineered features** including novel naloxone velocity and seizure-vulnerability interaction
-- **4 streaming data sources** fused into a unified geospatial grid
-- Live **Plotly Mapbox dashboard** with SHAP explanations and resource allocation recommendations
+Over **100,000 Americans** die from drug overdoses annually, with opioids accounting for 75%. Public health departments fight this crisis with data that arrives weeks late. This dashboard provides **real-time surveillance** using free public government data.
 
 ## Quick Start
 
 ```bash
 pip install -r requirements.txt
-python run.py                      # Full pipeline
+python run.py                      # Fetch real data from CDC/Census APIs
 streamlit run dashboards/app.py    # Dashboard at localhost:8501
 ```
 
-Or with Docker: `docker-compose up --build`
+## Dashboard Pages
 
-## Architecture
+| Page | Data Source | What It Shows |
+|------|-----------|---------------|
+| 🌍 **National Overview** | CDC VSRR | Annual deaths, trend line, US choropleth |
+| 📈 **Overdose Trends** | CDC VSRR | Multi-state time series, year-over-year comparison |
+| 🗺️ **State Comparison** | CDC VSRR | Choropleth map, top-15 rankings, drug heatmap |
+| 💊 **Drug Breakdown** | CDC VSRR | Drug-type trends, fentanyl vs heroin, key insights |
+| 🏘️ **Vulnerability** | Census ACS | 33,774 zip codes, poverty/unemployment, risk scores |
 
-```
-EMS Dispatch ─┐
-ED Admissions ─┼──> Streaming Ingestion ──> Geospatial Fusion ──> LightGBM ──> Dashboard
-Naloxone Logs ─┤    (validation, dedup)     (zip × 6hr grid)     (24/48/72h)   (Mapbox)
-DEA Seizures ──┘                            (35+ features)       (SHAP)
-```
+## Real Data Sources
+
+All data fetched from **free public APIs** — no API keys required:
+
+| Source | Data | Records | URL |
+|--------|------|---------|-----|
+| **CDC VSRR** | Provisional overdose deaths by drug type | 42,535 | [data.cdc.gov](https://data.cdc.gov/NCHS/VSRR-Provisional-Drug-Overdose-Death-Counts/xkb8-kh2a) |
+| **Census ACS** | Poverty, income, unemployment by zip code | 33,774 | [api.census.gov](https://api.census.gov) |
+| **CDC WONDER** | Annual mortality by state | 540 | [wonder.cdc.gov](https://wonder.cdc.gov) |
 
 ## Project Structure
 
 ```
 ├── src/
 │   ├── config.py                  # Central configuration
-│   ├── generate_data.py           # 4-source synthetic data with hotspot clustering
+│   ├── fetch_real_data.py         # Real data fetchers (CDC VSRR, Census ACS, CDC WONDER)
 │   ├── streaming_ingestion.py     # Kafka-style validation, dedup, dead-letter queue
 │   ├── geospatial_fusion.py       # Zip × time grid, 35+ feature engineering
 │   └── train_model.py             # LightGBM multi-horizon + SHAP + ablation
-├── dashboards/app.py              # 5-page Streamlit + Plotly Mapbox
-├── tests/test_pipeline.py         # 13 unit tests
-├── docs/methodology.md            # Detailed methodology
+├── dashboards/app.py              # 5-page Streamlit + Plotly dashboard
+├── data/real/                     # Downloaded real data (parquet files)
+├── tests/test_pipeline.py         # Unit tests
 ├── Dockerfile, docker-compose.yml
-└── run.py                         # One-command orchestrator
+└── run.py                         # One-command data fetching
 ```
 
-## Novel Findings
+## Key Findings from Real Data
 
-1. **Naloxone distribution velocity** is the strongest leading indicator — pharmacies stock up 24-48h before spikes
-2. **Seizure-vulnerability interaction**: DEA seizures alone don't predict overdoses, but seizures near high-poverty zips do
-3. **Spatial autocorrelation (Moran's I)** captures geographic propagation of clusters
+- **68,408 annual overdose deaths** (as of Oct 2025), down 15.4% from peak
+- **Synthetic opioids (Fentanyl)** drive the crisis — surpassed heroin in 2016
+- **Socioeconomic vulnerability** strongly correlates with overdose rates (0.0–0.93 range)
+- **10 states** account for >60% of total deaths (CA, FL, OH, PA, NY, TX, NC, IL, TN, NJ)
 
 ## Technologies
-LightGBM, SHAP, Plotly Mapbox, Streamlit, Pandas, NumPy, Scikit-learn, Kafka-style event processing, Geospatial analytics (haversine, Moran's I), Docker
+Streamlit, Plotly, Pandas, NumPy, CDC VSRR API, Census ACS API, Docker

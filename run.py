@@ -1,6 +1,6 @@
 """
 Pipeline Orchestrator: Opioid Overdose Surveillance
-  1. Generate synthetic data (4 sources)
+  1. Fetch real data from CDC/Census APIs
   2. Run streaming ingestion (validation, dedup, DLQ)
   3. Geospatial-temporal fusion (35+ features)
   4. Train LightGBM models (24h/48h/72h + SHAP + ablation)
@@ -27,29 +27,17 @@ def main():
     logger.info("  Real-Time Prediction | Geospatial Fusion | LightGBM + SHAP")
     logger.info("=" * 70)
 
-    logger.info("\n[1/4] GENERATING SYNTHETIC DATA (4 sources)...")
-    from src.generate_data import generate_all
-    generate_all()
-
-    logger.info("\n[2/4] RUNNING STREAMING INGESTION...")
-    from src.streaming_ingestion import run_ingestion
-    run_ingestion()
-
-    logger.info("\n[3/4] GEOSPATIAL-TEMPORAL FUSION (35+ features)...")
-    from src.geospatial_fusion import build_feature_matrix
-    build_feature_matrix()
-
-    logger.info("\n[4/4] TRAINING LIGHTGBM MODELS (24h/48h/72h)...")
-    from src.train_model import train_pipeline
-    results = train_pipeline()
+    logger.info("\n[1/1] FETCHING REAL DATA (CDC VSRR, Census ACS, CDC WONDER)...")
+    from src.fetch_real_data import fetch_all
+    results = fetch_all()
 
     elapsed = time.time() - start
     logger.info("\n" + "=" * 70)
-    logger.info(f"  PIPELINE COMPLETE in {elapsed/60:.1f} minutes")
-    for horizon, r in results.items():
-        logger.info(f"  {horizon} AUC-ROC: {r['auc_roc']}")
+    logger.info(f"  PIPELINE COMPLETE in {elapsed:.1f} seconds")
     logger.info("=" * 70)
     logger.info("\n  Launch dashboard: streamlit run dashboards/app.py")
+
+    return results
 
 
 if __name__ == "__main__":

@@ -4,8 +4,10 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent.parent
 DATA_DIR = ROOT_DIR / "data"
 MODEL_DIR = ROOT_DIR / "models"
+REAL_DATA_DIR = DATA_DIR / "real"
 DATA_DIR.mkdir(exist_ok=True)
 MODEL_DIR.mkdir(exist_ok=True)
+REAL_DATA_DIR.mkdir(exist_ok=True)
 
 RANDOM_SEED = 42
 
